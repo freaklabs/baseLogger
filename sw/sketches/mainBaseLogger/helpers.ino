@@ -60,6 +60,8 @@ void logMsg(char *msg)
     memset(temp, 0, sizeof(temp));
     sprintf(temp, "%04d/%02d/%02d,%02d:%02d:%02d: %s", time.year, time.mon, time.mday, time.hour, time.min, time.sec, msg);
     printf(temp);
+
+#if (LOG_MESSAGES == 1)     
     if (sdIsPresent)
     {
         myFile = sd.open(LOGFILE, O_RDWR | O_CREAT | O_APPEND);
@@ -68,7 +70,12 @@ void logMsg(char *msg)
             myFile.print(temp); 
             myFile.close();
         }
+        else
+        {
+            Serial.println("Error opening file for writing.");
+        } 
     }
+#endif // LOG_MESSAGES   
 }
 
 /**************************************************************************/
@@ -79,7 +86,8 @@ void logData(char *msg)
 {
     char temp[300];
     struct ts time = rtcGetTime();
-    
+
+#if (LOG_DATA == 1)    
     memset(temp, 0, sizeof(temp));
     sprintf(temp, "%04d/%02d/%02d,%02d:%02d:%02d: %s", time.year, time.mon, time.mday, time.hour, time.min, time.sec, msg);
     if (sdIsPresent)
@@ -90,7 +98,13 @@ void logData(char *msg)
             myFile.print(temp); 
             myFile.close();
         }
-    }    
+        else
+        {
+            Serial.println("Error opening file for writing.");
+        } 
+        
+    }
+#endif // LOG_DATA        
 }
 
 /**************************************************************************/

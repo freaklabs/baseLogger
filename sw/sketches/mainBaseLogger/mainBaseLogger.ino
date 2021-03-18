@@ -14,8 +14,12 @@
 #include <avr/wdt.h>
 #include <limits.h>
 
+// define what we log to SD card
+#define LOG_DATA 1
+#define LOG_MESSAGES 0
+
 // set this for each release
-#define VERSION "0.97a"
+#define VERSION "0.50"
 
 #define DATAFILE "DATAFILE.TXT"
 #define LOGFILE "LOGFILE.TXT"
@@ -205,7 +209,7 @@ void setup()
 
     getMeta();
     cmd.begin(57600);
-    printf("Baseliner Soil Health Deployment Application\n");
+    printf("BaseLogger Soil Health Data Logger Application\n");
     Serial.println(VERSION); 
 
     // init packet header
