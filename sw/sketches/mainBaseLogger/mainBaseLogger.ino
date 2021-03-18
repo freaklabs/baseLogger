@@ -334,6 +334,7 @@ void setup()
     //periodicHandler();
 
     logMsg("Reset occurred\n");
+    Serial.flush();
 }
 
 /**************************************************************************/

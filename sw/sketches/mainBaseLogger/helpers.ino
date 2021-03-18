@@ -89,7 +89,7 @@ void logData(char *msg)
 
 #if (LOG_DATA == 1)    
     memset(temp, 0, sizeof(temp));
-    sprintf(temp, "%04d/%02d/%02d,%02d:%02d:%02d: %s", time.year, time.mon, time.mday, time.hour, time.min, time.sec, msg);
+    sprintf(temp, "%04d/%02d/%02d,%02d:%02d:%02d,%s", time.year, time.mon, time.mday, time.hour, time.min, time.sec, msg);
     if (sdIsPresent)
     {
         myFile = sd.open(DATAFILE, O_RDWR | O_CREAT | O_APPEND);
