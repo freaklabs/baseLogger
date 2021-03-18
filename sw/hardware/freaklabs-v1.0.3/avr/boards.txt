@@ -1,0 +1,50 @@
+menu.ver=Version
+
+##############################################################
+## Baseliner
+
+baseliner.name=Freaklabs Baseliner
+
+baseliner.upload.tool=arduino:avrdude
+baseliner.upload.protocol=arduino
+
+baseliner.bootloader.tool=arduino:avrdude
+baseliner.bootloader.unlock_bits=0x3F
+baseliner.bootloader.lock_bits=0x0F
+
+baseliner.build.core=arduino:arduino
+baseliner.build.board=WILDLOGGER
+baseliner.upload.maximum_size=126976
+baseliner.upload.maximum_data_size=16384
+baseliner.upload.speed=57600
+
+baseliner.bootloader.low_fuses=0xFD
+baseliner.bootloader.high_fuses=0xDC
+baseliner.bootloader.extended_fuses=0xFE
+baseliner.bootloader.file=optiboot/optiboot_1284p_8MHz_57.6k.hex
+
+baseliner.build.f_cpu=8000000L
+baseliner.build.mcu=atmega1284p
+baseliner.build.variant=baseliner
+
+##############################################################
+## Wilduino3G
+
+wilduino3g.name=Freaklabs Wilduino 3G
+wilduino3g.upload.tool=arduino:avrdude
+wilduino3g.upload.protocol=arduino
+wilduino3g.upload.maximum_size=126976
+wilduino3g.upload.maximum_data_size=16384
+wilduino3g.upload.speed=230400
+wilduino3g.bootloader.tool=arduino:avrdude
+wilduino3g.bootloader.unlock_bits=0x3F
+wilduino3g.bootloader.lock_bits=0x0F
+wilduino3g.bootloader.low_fuses=0xFD
+wilduino3g.bootloader.high_fuses=0xDC
+wilduino3g.bootloader.extended_fuses=0xFE
+wilduino3g.bootloader.file=optiboot/optiboot_atmega1284p_7MHz.hex
+wilduino3g.build.core=arduino:arduino
+wilduino3g.build.board=WILDUINO3G
+wilduino3g.build.f_cpu=7372800L
+wilduino3g.build.mcu=atmega1284p
+wilduino3g.build.variant=wilduino3g
