@@ -16,7 +16,7 @@
 
 // define what we log to SD card
 #define LOG_DATA 1
-#define LOG_MESSAGES 0
+#define LOG_MESSAGES 1
 
 // set this for each release
 #define VERSION "0.50"
@@ -344,8 +344,6 @@ void loop()
 {
     // reset timer
     wdt_reset();
-    
-    cmd.poll();
 
     if (normalMode)
     {
@@ -404,6 +402,8 @@ void loop()
     }
     else
     {
+        cmd.poll();
+        
         // implement timeout in command line mode to confirm we want to stay in that mode. 
         if (elapsedTime(cmdModeTimeCnt) > cmdModeTimeLimit)
         {
