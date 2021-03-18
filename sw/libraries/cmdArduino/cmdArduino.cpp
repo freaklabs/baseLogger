@@ -174,7 +174,7 @@ void Cmd::handler()
         // msg too long, clear command and display warning 
         if ((msg_ptr - msg) == (MAX_MSG_SIZE-1))
         {
-            Serial.println("Command too long. Pleaes reduce command size.")
+            Serial.println("Command too long. Pleaes reduce command size.");
             msg_ptr = msg;
         }
         break;
