@@ -363,8 +363,8 @@ void loop()
                 // minute alarm
                 DS3231_clear_a1f();
 
-                sprintf(tmpBuf, "RTC Interrupt - Timecount: %d.\n", timeCount);
-                logMsg(tmpBuf);
+                //sprintf(tmpBuf, "RTC Interrupt - Timecount: %d.\n", timeCount);
+                //logMsg(tmpBuf);
                 
                 if (timeCount >= (meta.txInterval-1))
                 {
