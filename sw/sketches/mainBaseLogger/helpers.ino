@@ -120,6 +120,7 @@ void readFile(char *filename)
         {
             while(myFile.available())
             {
+                wdt_reset();
                 Serial.write(myFile.read());
             }       
             myFile.close();
