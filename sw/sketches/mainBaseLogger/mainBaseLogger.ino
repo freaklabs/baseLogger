@@ -49,6 +49,7 @@
 #define ACK_WAIT_TIMEOUT 2000
 #define ONE_MINUTE 60000
 #define CMD_MODE_TIME_LIMIT 5
+#define CO2_WARMUP_TIME 3
 
 enum
 {
@@ -350,7 +351,6 @@ void loop()
         if (flagRtc)
         {
             flagRtc = false;
-
             
             // handle rtc interrupt
             // minute alarm has occurred. handle it
@@ -362,14 +362,19 @@ void loop()
                 
                 // minute alarm
                 DS3231_clear_a1f();
-
-                //sprintf(tmpBuf, "RTC Interrupt - Timecount: %d.\n", timeCount);
-                //logMsg(tmpBuf);
                 
                 if (timeCount >= (meta.txInterval-1))
                 {
                     timeCount = 0;
                     periodicHandler();     
+                }
+                else if (meta.txInterval > CO2_WARMUP_TIME)
+                {
+                    if (timeCount == meta.txInterval - CO2_WARMUP_TIME)
+                    {
+                        // start warmup of CO2 sensor
+                        digitalWrite(pinCo2Enb, HIGH); 
+                    }
                 }
                 else
                 {
@@ -377,25 +382,6 @@ void loop()
                 }        
             }             
         }
-/*
-        // if we receive a packet, handle it
-        if (pktLen)
-        {
-            pktHdr_t hdr;
-            char data[MAX_PAYLOAD_SIZE];
-            int16_t rssi = LoRa.packetRssi();
-
-            memset(data, 0, MAX_PAYLOAD_SIZE);
-            receivePacket(pktLen, &hdr, data); 
-            if (hdr.destAddr == meta.stationNum)
-            {
-                // make sure packet is for us
-                sprintf(tmpBuf, "Packet received with RSSI %d: %s.\n", rssi, data);
-                logMsg(tmpBuf);
-            }
-            pktLen = 0;        
-        }
-*/
 
         // go to sleep
         sysSleep();           
@@ -443,9 +429,7 @@ void periodicHandler()
     // turn on soil moisture sensors
     digitalWrite(pinSoilEnb, POWER_ON);
 
-    // turn on CO2 power
-//    digitalWrite(pinCo2Enb, HIGH); 
-
+    // delay to give soil moisture sensors time to ramp power
     delay(1000);
 
     // read soil moisture sensors
@@ -489,7 +473,11 @@ void periodicHandler()
     data.soilTemp = getSoilTemperature();
 
     // get co2
-//    data.co2PPM = getCO2();
+    data.co2PPM = getCO2();
+
+    // turn off power to the CO2 sensor after reading is taken
+    delay(100);
+    digitalWrite(pinCo2Enb, LOW);
 
     // get battery voltage
     data.battVal = getBattery();
@@ -500,95 +488,21 @@ void periodicHandler()
     // get internal temperature
     data.internalTemp =  DS3231_get_treg();
 
-    for (int i=0; i<MAX_TRANSMIT_RETRIES; i++)
-    {
-        uint32_t now;
-        wdt_reset();
-        memset(payload, 0, sizeof(payload));
-        sprintf(payload, "%s,%d,%d,%lu,%3.2f,%2.2f,%2.2f,%3.2f,%5.2f,%3.2f,%5.2f,%.3f,%.3f,%.3f,%.2f,%.2f,%d\n", \
-                    meta.stationID, meta.stationNum, stats.retries, stats.failedTx, \
-                    data.internalTemp, data.battVal, data.solarVal, \
-                    data.bmeTemp, data.bmePressure, data.bmeHumidity, data.bmeAltitude, \
-                    data.soilMoisture[0], data.soilMoisture[1], data.soilMoisture[2], \
-                    data.phVoltage, data.soilTemp, data.co2PPM);
-                    
-        // write to data file
-        logData(payload);
-
-        // write to logfile with sequence number
-        sprintf(tmpBuf, "Seq: %d: %s", hdr.seq, payload);
-        logMsg(tmpBuf);
-
-        Serial.flush();
-        break;
-
-/*    
-        // send data out
-        uint8_t *phdr = (uint8_t *)&hdr;
-        LoRa.beginPacket();
-        for (int i=0; i<sizeof(pktHdr_t); i++)
-        {
-            LoRa.write(*phdr);  
-            phdr++; 
-        }
-        LoRa.print(payload);
-        LoRa.endPacket();
-        LoRa.flush(); 
-        LoRa.receive();     
-
-        // wait for ACK
-        now = millis();  
-        while (elapsedTime(now) < ACK_WAIT_TIMEOUT)
-        {
-            if (pktLen)
-            {
-                pktHdr_t rxHdr;
-                char buf[MAX_PAYLOAD_SIZE];
+    memset(payload, 0, sizeof(payload));
+    sprintf(payload, "%s,%d,%d,%lu,%3.2f,%2.2f,%2.2f,%3.2f,%5.2f,%3.2f,%5.2f,%.3f,%.3f,%.3f,%.2f,%.2f,%d\n", \
+                meta.stationID, meta.stationNum, stats.retries, stats.failedTx, \
+                data.internalTemp, data.battVal, data.solarVal, \
+                data.bmeTemp, data.bmePressure, data.bmeHumidity, data.bmeAltitude, \
+                data.soilMoisture[0], data.soilMoisture[1], data.soilMoisture[2], \
+                data.phVoltage, data.soilTemp, data.co2PPM);
                 
-                memset(buf, 0, MAX_PAYLOAD_SIZE);
-                receivePacket(pktLen, &rxHdr, buf); 
-                
+    // write to data file
+    logData(payload);
 
-                // is it an ACK packet?
-                if (rxHdr.type == PKT_ACK)
-                {
-                    // is it for us?
-                    if (rxHdr.destAddr == meta.stationNum)
-                    {
-                        sprintf(tmpBuf, "ACK Received - src: %d, dest: %d, seq: %d, type: %d.\n", rxHdr.srcAddr, rxHdr.destAddr, rxHdr.seq, rxHdr.type);
-                        logMsg(tmpBuf);                      
-                        stats.retries = 0;
-                        ackd = true;            
-                    }                    
-                }
-                pktLen = 0;
-                break;        
-            }
-        }   
-        
-        if (ackd)
-        {
-            break;     
-        }
-        else
-        {
-            stats.retries++;
-        }
-*/        
-    }  
-
-/*
-    if (!ackd)
-    {
-        // the transmission attempt failed
-        stats.retries = 0;
-        stats.failedTx++;    
-        logMsg("Data transmission attempt failed\n");
-    
-    }
-    hdr.seq++;    
-*/        
-    Serial.flush();
+    // write to logfile with sequence number
+    sprintf(tmpBuf, "Seq: %d: %s", hdr.seq, payload);
+    logMsg(tmpBuf);
+    Serial.flush();                 
 }
 
 /**************************************************************************/
@@ -603,7 +517,6 @@ void sysSleep()
 
     // shut down power to soil moisture and co2 sensors
     digitalWrite(pinSoilEnb, POWER_OFF);
-    digitalWrite(pinCo2Enb, LOW);
 
     LowPower.powerDown(SLEEP_FOREVER, ADC_OFF, BOD_ON);
     
