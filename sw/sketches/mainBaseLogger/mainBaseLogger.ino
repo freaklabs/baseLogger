@@ -19,7 +19,7 @@
 #define LOG_MESSAGES 1
 
 // set this for each release
-#define VERSION "0.60"
+#define VERSION "0.90"
 
 #define DATAFILE "DATAFILE.TXT"
 #define LOGFILE "LOGFILE.TXT"
