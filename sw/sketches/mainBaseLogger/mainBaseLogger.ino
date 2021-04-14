@@ -19,7 +19,7 @@
 #define LOG_MESSAGES 1
 
 // set this for each release
-#define VERSION "0.50"
+#define VERSION "0.60"
 
 #define DATAFILE "DATAFILE.TXT"
 #define LOGFILE "LOGFILE.TXT"
@@ -368,18 +368,18 @@ void loop()
                     timeCount = 0;
                     periodicHandler();     
                 }
-                else if (meta.txInterval > CO2_WARMUP_TIME)
+                else 
                 {
-                    if (timeCount == meta.txInterval - CO2_WARMUP_TIME)
+                    if (meta.txInterval > CO2_WARMUP_TIME)
                     {
-                        // start warmup of CO2 sensor
-                        digitalWrite(pinCo2Enb, HIGH); 
+                        if (timeCount == meta.txInterval - CO2_WARMUP_TIME)
+                        {                  
+                            // start warmup of CO2 sensor
+                            digitalWrite(pinCo2Enb, HIGH); 
+                        }
                     }
-                }
-                else
-                {
-                    timeCount++;
-                }        
+                    timeCount++;                    
+                }      
             }             
         }
 
@@ -473,7 +473,7 @@ void periodicHandler()
     data.soilTemp = getSoilTemperature();
 
     // get co2
-    data.co2PPM = getCO2();
+    data.co2PPM = getCO2(); 
 
     // turn off power to the CO2 sensor after reading is taken
     delay(100);
@@ -500,8 +500,7 @@ void periodicHandler()
     logData(payload);
 
     // write to logfile with sequence number
-    sprintf(tmpBuf, "Seq: %d: %s", hdr.seq, payload);
-    logMsg(tmpBuf);
+    logMsg(payload);
     Serial.flush();                 
 }
 
